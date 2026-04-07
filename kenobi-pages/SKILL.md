@@ -7,14 +7,14 @@ description: Build personalized landing pages powered by Kenobi workflow content
 
 Build a single page template that renders unique, AI-generated content for every lead. One workflow. One template. N personalized pages.
 
-Each page gets a unique URL like `https://yoursite.com/for/acme-corp` and fetches its content from the Kenobi Content API at runtime (or build time).
+Each page gets a unique URL like `https://yoursite.com/for/acme-corp` and fetches its content from the Kenobi Pages API at runtime (or build time).
 
 ---
 
 ## Prerequisites
 
 - A Kenobi account with an organization
-- A **public key** from the Kenobi dashboard (starts with `pk_live_` or `pk_test_`)
+- A **Pages API key** from the Kenobi workflow builder (starts with `pk_live_` or `pk_test_`)
 - A Next.js project (App Router)
 - Either a configured Kenobi workflow (forward mode) or an existing page to personalize (reverse mode)
 
@@ -23,14 +23,16 @@ Each page gets a unique URL like `https://yoursite.com/for/acme-corp` and fetche
 ## Installation
 
 ```bash
-pnpm add @kenobi/content
+pnpm add kenobi-pages
 ```
 
-Add your API key to `.env.local`:
+Then ask the user to run the setup command in their terminal:
 
-```env
-KENOBI_API_KEY=pk_live_your_key_here
+```bash
+npx kenobi-pages init
 ```
+
+This will prompt them for their API key (from the Kenobi workflow builder at `/testing/cortex`), save it globally at `~/.kenobi/config.json`, and add `KENOBI_PAGES_KEY` to the project's `.env.local` automatically.
 
 ---
 
@@ -39,18 +41,18 @@ KENOBI_API_KEY=pk_live_your_key_here
 Create `lib/kenobi.ts`:
 
 ```ts
-import { createKenobiClient } from "@kenobi/content"
+import { createKenobiPagesClient } from "kenobi-pages"
 
-export const kenobi = createKenobiClient({
-  apiKey: process.env.KENOBI_API_KEY!,
+export const kenobi = createKenobiPagesClient({
+  apiKey: process.env.KENOBI_PAGES_KEY!,
 })
 ```
 
 If your Kenobi instance runs at a custom domain, pass `baseUrl`:
 
 ```ts
-export const kenobi = createKenobiClient({
-  apiKey: process.env.KENOBI_API_KEY!,
+export const kenobi = createKenobiPagesClient({
+  apiKey: process.env.KENOBI_PAGES_KEY!,
   baseUrl: "https://your-kenobi-instance.com",
 })
 ```
@@ -66,7 +68,7 @@ Use this when a Kenobi workflow already exists and you want to build a page arou
 The workflow has a defined output schema. Fetch it using the CLI:
 
 ```bash
-npx kenobi-content schema get 42
+npx kenobi-pages schema get 42
 ```
 
 This outputs the schema JSON:
@@ -95,7 +97,7 @@ This outputs the schema JSON:
 Auto-generate a typed interface from the schema:
 
 ```bash
-npx kenobi-content types 42
+npx kenobi-pages types 42
 ```
 
 This outputs a TypeScript interface you can save to `lib/kenobi-types.ts`:
@@ -240,7 +242,7 @@ Does this look right? Should I add or remove any fields?
 After confirming with the user, construct the schema JSON and push it in a single command:
 
 ```bash
-npx kenobi-content schema push "Post-Call Landing Page" '{"fields":{"headline":{"type":"string","description":"Personalized headline for the lead"},"value_proposition":{"type":"string","description":"Why our product matters to this specific lead"},"company_logo_url":{"type":"url","description":"Lead company logo"},"pain_points":{"type":"array","items":{"type":"object","fields":{"title":{"type":"string"},"description":{"type":"string"}}},"min":2,"max":5,"description":"Pain points relevant to the lead"},"cta_text":{"type":"string","description":"Call-to-action button text"}}}'
+npx kenobi-pages schema push "Post-Call Landing Page" '{"fields":{"headline":{"type":"string","description":"Personalized headline for the lead"},"value_proposition":{"type":"string","description":"Why our product matters to this specific lead"},"company_logo_url":{"type":"url","description":"Lead company logo"},"pain_points":{"type":"array","items":{"type":"object","fields":{"title":{"type":"string"},"description":{"type":"string"}}},"min":2,"max":5,"description":"Pain points relevant to the lead"},"cta_text":{"type":"string","description":"Call-to-action button text"}}}'
 ```
 
 The CLI outputs the result as JSON to stdout and a confirmation to stderr:
@@ -271,7 +273,7 @@ Replace hardcoded content with dynamic fetching. Follow the same pattern as Forw
 For stronger typing, create a typed wrapper around `getPage`:
 
 ```ts
-import type { KenobiFetchOptions } from "@kenobi/content"
+import type { KenobiFetchOptions } from "kenobi-pages"
 
 import { kenobi } from "@/lib/kenobi"
 import type { LandingPageContent } from "@/lib/kenobi-types"
@@ -295,7 +297,7 @@ export const getLandingPage = async (
 The SDK throws typed errors:
 
 ```ts
-import { KenobiUnauthorizedError, KenobiContentError } from "@kenobi/content"
+import { KenobiUnauthorizedError, KenobiPagesError } from "kenobi-pages"
 
 try {
   const page = await kenobi.getPage(workflowId, slug)
@@ -303,7 +305,7 @@ try {
   if (err instanceof KenobiUnauthorizedError) {
     // API key is invalid or missing
   }
-  if (err instanceof KenobiContentError) {
+  if (err instanceof KenobiPagesError) {
     // Generic API error — check err.status and err.code
   }
 }
@@ -333,26 +335,26 @@ All types support `description` (helps AI generation) and `optional` (marks the 
 
 ## CLI Reference
 
-The `kenobi-content` CLI is available after installing `@kenobi/content`. It reads `KENOBI_API_KEY` from the environment.
+The `kenobi-pages` CLI is available after installing `kenobi-pages`. It reads the API key from the `KENOBI_PAGES_KEY` environment variable first, then falls back to `~/.kenobi/config.json` (set via `npx kenobi-pages init`).
 
 ```bash
 # Fetch a workflow's output schema
-npx kenobi-content schema get <workflowId>
+npx kenobi-pages schema get <workflowId>
 
 # Generate TypeScript types and save to file
-npx kenobi-content types <workflowId> > lib/kenobi-types.ts
+npx kenobi-pages types <workflowId> > lib/kenobi-types.ts
 
 # Push a schema to Kenobi (inline JSON — preferred for agents)
-npx kenobi-content schema push "Schema Name" '{"fields":{"headline":{"type":"string"}}}'
+npx kenobi-pages schema push "Schema Name" '{"fields":{"headline":{"type":"string"}}}'
 
 # Push a schema from file (alternative)
-npx kenobi-content schema push "Schema Name" --file schema.json
+npx kenobi-pages schema push "Schema Name" --file schema.json
 
 # Fetch page content for a specific lead
-npx kenobi-content page get <workflowId> <slug>
+npx kenobi-pages page get <workflowId> <slug>
 
 # Override base URL
-KENOBI_BASE_URL=https://custom.kenobi.ai npx kenobi-content schema get 42
+KENOBI_BASE_URL=https://custom.kenobi.ai npx kenobi-pages schema get 42
 ```
 
 All commands output JSON to stdout and status messages to stderr.
@@ -363,9 +365,9 @@ Exit codes: 0 = success, 1 = API error, 2 = bad arguments, 3 = not found, 4 = un
 ## SDK Quick Reference
 
 ```ts
-import { createKenobiClient } from "@kenobi/content"
+import { createKenobiPagesClient } from "kenobi-pages"
 
-const kenobi = createKenobiClient({ apiKey: process.env.KENOBI_API_KEY! })
+const kenobi = createKenobiPagesClient({ apiKey: process.env.KENOBI_PAGES_KEY! })
 
 // Fetch page content (returns null if not found)
 const page = await kenobi.getPage(workflowId, "acme-corp", { revalidate: 60 })
