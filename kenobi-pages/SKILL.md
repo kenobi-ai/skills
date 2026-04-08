@@ -9,29 +9,33 @@ Kenobi Pages lets users create a single page template in their Next.js app that 
 
 The system has three parts: a **page** (Next.js dynamic route), a **workflow** (configured in Kenobi — wires data sources to AI generation to produce content), and **runs** (executing a workflow for a specific lead).
 
-## Figuring Out What the User Needs
+## MANDATORY: Follow This Order
 
-Users won't arrive saying "I need forward-flow schema-first page building." They'll say things like "I want personalized landing pages" or "can we generate custom pages after sales calls." You need to figure out where they are in the process.
+You MUST complete each phase before moving to the next. Do NOT skip ahead. Do NOT start installing packages, creating files, running commands, or writing code until Phase 1 and Phase 2 are both complete.
 
-**Ask the user:**
+### Phase 1 — Discovery (no tools, no code, no commands)
+
+Ask the user this question. Wait for their answer before doing anything else:
 
 > Do you already have a Kenobi workflow set up, or are we starting from scratch?
 
-Then route based on their answer:
+Based on their answer, identify which sub-skill to use:
 
-- **"I have a workflow and want to build the page"** -- Read the **pages** sub-skill (`skills/pages/SKILL.md`)
-- **"I have a page and want to make it personalized"** -- Read the **pages** sub-skill (reverse mode section)
-- **"I need to create a workflow" / "starting from scratch"** -- Read the **workflows** sub-skill (`skills/workflows/SKILL.md`)
-- **"I want to generate content for leads" / "run a workflow"** -- Read the **run** sub-skill (`skills/run/SKILL.md`)
-- **Not sure / vague request** -- Start with the pages sub-skill. Most users begin by wanting a page built, and the skill will guide them through discovering or creating a workflow as needed.
+- **"I have a workflow and want to build the page"** → pages sub-skill (`skills/pages/SKILL.md`), forward mode
+- **"I have a page and want to make it personalized"** → pages sub-skill, reverse mode
+- **"I need to create a workflow" / "starting from scratch"** → workflows sub-skill (`skills/workflows/SKILL.md`)
+- **"I want to generate content for leads" / "run a workflow"** → run sub-skill (`skills/run/SKILL.md`)
+- **Not sure / vague request** → Ask a follow-up: "Do you have an existing page you'd like to personalize, or should I design one from scratch?" Then route to the pages sub-skill.
 
-## Setup
+Do NOT proceed to Phase 2 until you have asked and received an answer.
 
-Before doing anything, ensure the `kenobi-pages` package is installed and the API key is configured.
+### Phase 2 — Setup
+
+Before building anything, ensure the environment is ready:
 
 1. Install: `pnpm add kenobi-pages`
-2. Ask the user to run `npx kenobi-pages init` in their terminal — this interactively prompts for their API key and saves it to `~/.kenobi/config.json` and `.env.local`
-3. Create `lib/kenobi.ts`:
+2. Check if `KENOBI_PAGES_KEY` is already in `.env.local`. If not, ask the user to run `npx kenobi-pages init` in their terminal — this interactively prompts for their API key and saves it to `~/.kenobi/config.json` and `.env.local`.
+3. Create `lib/kenobi.ts` (if it doesn't exist):
 
 ```ts
 import { createKenobiPagesClient } from "kenobi-pages";
@@ -41,7 +45,11 @@ export const kenobi = createKenobiPagesClient({
 });
 ```
 
-If `npx kenobi-pages init` has already been run and `KENOBI_PAGES_KEY` is in `.env.local`, skip steps 1-2.
+If the package is already installed and `lib/kenobi.ts` exists, skip this phase.
+
+### Phase 3 — Implementation
+
+Now read the sub-skill identified in Phase 1 and follow its instructions.
 
 ## Important Context
 

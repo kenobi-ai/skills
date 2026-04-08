@@ -7,22 +7,19 @@ description: Build a Next.js dynamic route that renders personalized, AI-generat
 
 This skill covers creating the Next.js page that renders personalized content fetched from Kenobi at runtime.
 
-## When to Use
+## Prerequisite
 
-- User wants to build a landing page that shows different content per lead
-- User has a Kenobi workflow and wants to build the frontend for it
-- User has an existing page and wants to make parts of it dynamic/personalized
-- User mentions "personalized pages", "dynamic landing pages", "per-lead content"
+You should only be here because you completed Phase 1 (Discovery) and Phase 2 (Setup) from the parent skill (`kenobi-pages/SKILL.md`). If you haven't asked the user whether they have a workflow and completed setup, go back and do that first.
 
-## First: Figure Out the Starting Point
+## Determine the Mode
 
-Ask the user:
+You should already know which mode to use from the discovery question in the parent skill. If not, ask:
 
 > Do you already have a Kenobi workflow with a defined output schema, or do you have an existing page you'd like to personalize?
 
-- **"I have a workflow"** -- Forward mode (schema already exists, build the page around it)
-- **"I have a page I want to personalize"** -- Reverse mode (analyze the page, define a schema, push it to Kenobi)
-- **"Neither" / unclear** -- They probably need to set up a workflow first. Read the **workflows** sub-skill. Come back here once a workflow exists.
+- **"I have a workflow"** → Forward mode (schema already exists, build the page around it)
+- **"I have a page I want to personalize"** → Reverse mode (analyze the page, define a schema, push it to Kenobi)
+- **"Neither" / unclear** → They probably need to set up a workflow first. Read the **workflows** sub-skill. Come back here once a workflow exists.
 
 ---
 

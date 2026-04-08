@@ -7,12 +7,9 @@ description: Trigger Kenobi workflow runs to generate personalized content for l
 
 This skill covers triggering workflow runs, polling for completion, and verifying the generated content. A run executes a workflow for one lead and produces the content that the page will render.
 
-## When to Use
+## Prerequisite
 
-- User wants to generate content for a specific lead or company
-- User has finished a call and wants to create a personalized follow-up page
-- User wants to batch-generate pages for multiple leads
-- User mentions "run", "generate", "trigger", "create pages for"
+You should only be here because you completed Phase 1 (Discovery) and Phase 2 (Setup) from the parent skill (`kenobi-pages/SKILL.md`). If you haven't asked the user whether they have a workflow and completed setup, go back and do that first.
 
 ## Before Running
 

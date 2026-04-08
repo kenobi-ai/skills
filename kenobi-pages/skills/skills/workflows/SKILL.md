@@ -7,12 +7,9 @@ description: Create and modify Kenobi workflows that wire data sources to AI gen
 
 A workflow is a pipeline that takes data from external sources (CRM, databases, etc.), runs AI generation, and produces personalized content keyed by a slug. This skill covers creating and modifying workflows programmatically via the CLI.
 
-## When to Use
+## Prerequisite
 
-- User wants to set up a new content pipeline from scratch
-- User wants to connect data sources (HubSpot, Notion, etc.) to page generation
-- User wants to modify an existing workflow's config
-- User mentions "workflow", "data sources", "AI generation setup", "content pipeline"
+You should only be here because you completed Phase 1 (Discovery) and Phase 2 (Setup) from the parent skill (`kenobi-pages/SKILL.md`). If you haven't asked the user whether they have a workflow and completed setup, go back and do that first.
 
 ## First: Does a Workflow Already Exist?
 
