@@ -57,6 +57,14 @@ npx kenobi-pages sources
 
 This lists all data sources connected to their Kenobi org with their schemas. Share what you find:
 
+After you pick a source you plan to use in the workflow, preview real rows so lookup fields and formats are obvious:
+
+```bash
+npx kenobi-pages sources sample <sourceKey>
+```
+
+Use the `sourceKey` from the list output (for example `notion:…` or `hubspot-crm:…`). Check values in columns you will match on — for example if the workflow uses lookup resolution on a domain field, confirm whether stored values look like `acme.com` or `https://acme.com`, and align the runtime param you pass accordingly.
+
 > I can see these data sources connected to your Kenobi account:
 > - "CRM Contacts" (Notion) — has fields: Name, Email, Domain, Company Size
 > - "Deals" (HubSpot) — has fields: deal_name, amount, stage
