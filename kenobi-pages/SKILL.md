@@ -353,6 +353,12 @@ npx kenobi-pages schema push "Schema Name" --file schema.json
 # Fetch page content for a specific lead
 npx kenobi-pages page get <workflowId> <slug>
 
+# List all workflows for your org
+npx kenobi-pages workflows
+
+# Trigger a workflow run and poll until completion
+npx kenobi-pages run <workflowId> --params '{"slug":"acme-corp"}'
+
 # Override base URL
 KENOBI_BASE_URL=https://custom.kenobi.ai npx kenobi-pages schema get 42
 ```
@@ -362,19 +368,96 @@ Exit codes: 0 = success, 1 = API error, 2 = bad arguments, 3 = not found, 4 = un
 
 ---
 
-## SDK Quick Reference
+## Running Workflows Programmatically
+
+Agents can trigger workflow runs directly via the CLI or SDK without needing the Kenobi UI.
+
+### Workflow: Discover, Trigger, Poll
+
+1. **List workflows** to find the right one:
+   ```bash
+   npx kenobi-pages workflows
+   ```
+
+2. **Inspect a workflow** to see its required params:
+   ```ts
+   const detail = await kenobi.getWorkflow(42)
+   console.log(detail.params) // [{ name: "slug" }, { name: "company_domain" }]
+   ```
+
+3. **Trigger a run** with the required params:
+   ```bash
+   npx kenobi-pages run 42 --params '{"slug":"acme-corp","company_domain":"acme.com"}'
+   ```
+   The CLI will poll automatically and print the final result to stdout.
+
+   **With context** -- pass free-form text (transcripts, instructions, constraints) that influences all AI generation in this run:
+   ```bash
+   npx kenobi-pages run 42 --params '{"slug":"acme-corp"}' --context "Call transcript: We discussed their need for faster onboarding. Make sure to emphasize the self-serve setup feature."
+   ```
+   Context is ephemeral -- it is not persisted and only affects this specific run.
+
+4. **Fetch the generated page** once the run completes:
+   ```bash
+   npx kenobi-pages page get 42 acme-corp
+   ```
+
+### SDK Methods
 
 ```ts
 import { createKenobiPagesClient } from "kenobi-pages"
 
 const kenobi = createKenobiPagesClient({ apiKey: process.env.KENOBI_PAGES_KEY! })
 
+// List all workflows
+const workflows = await kenobi.listWorkflows()
+
+// Get workflow detail (includes params, schema, destinations)
+const detail = await kenobi.getWorkflow(42)
+
+// Trigger a workflow run
+const handle = await kenobi.triggerRun(42, {
+  params: { slug: "acme-corp" },
+})
+// handle = { runId: "run_...", status: "QUEUED" }
+
+// Trigger with context (transcripts, instructions, constraints)
+const handleWithContext = await kenobi.triggerRun(42, {
+  params: { slug: "acme-corp" },
+  context: "Call transcript: They need faster onboarding. Emphasize self-serve setup.",
+})
+
+// Poll run status
+const status = await kenobi.getRunStatus(42, handle.runId)
+// status.status = "QUEUED" | "EXECUTING" | "COMPLETED" | "FAILED" | "CANCELED"
+
 // Fetch page content (returns null if not found)
-const page = await kenobi.getPage(workflowId, "acme-corp", { revalidate: 60 })
+const page = await kenobi.getPage(42, "acme-corp", { revalidate: 60 })
 
 // Fetch workflow output schema
-const schema = await kenobi.getSchema(workflowId)
+const schema = await kenobi.getSchema(42)
 
 // Push a schema (reverse flow)
 const result = await kenobi.postSchema("My Landing Page", { fields: { ... } })
 ```
+
+### Run Context
+
+The `--context` flag (CLI) and `context` option (SDK) let you inject free-form text into a workflow run. This text is prepended to every AI generation step's system prompt for that run only. Use it to pass:
+
+- **Call transcripts** -- so the AI can reference specific discussion points
+- **Special instructions** -- "Make sure to include the enterprise plan pricing"
+- **Constraints** -- "Keep the tone formal, avoid humor"
+- **Background info** -- company details, prospect notes, etc.
+
+Context is ephemeral and is **not persisted** -- it only affects the run it was passed to. Workflow-level descriptions (set in the builder UI) are persisted and applied to every run automatically.
+
+### Typical Agent Workflow
+
+An agent (Claude, Cursor, etc.) can automate the full pipeline:
+
+1. Run `npx kenobi-pages workflows` to discover available workflows
+2. Inspect the workflow params and description to understand what inputs are needed
+3. Run `npx kenobi-pages run <id> --params '{"slug":"lead-name"}' --context "Relevant context..."`
+4. Wait for completion (the CLI polls automatically)
+5. The generated page is now accessible at the configured URL
