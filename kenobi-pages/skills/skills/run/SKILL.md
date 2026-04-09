@@ -7,9 +7,9 @@ description: Trigger Kenobi workflow runs to generate personalized content for l
 
 This skill covers triggering workflow runs, polling for completion, and verifying the generated content. A run executes a workflow for one lead and produces the content that the page will render.
 
-## Prerequisite
+## Prerequisite — Do Not Skip
 
-You should only be here because you completed Phase 1 (Discovery) and Phase 2 (Setup) from the parent skill (`kenobi-pages/SKILL.md`). If you haven't asked the user whether they have a workflow and completed setup, go back and do that first.
+You must have already completed the discovery question and setup from the parent skill (`kenobi-pages/SKILL.md`). If the user hasn't been asked whether they have a workflow yet, STOP — go back to the parent skill and start from Phase 1. Do not continue reading this file.
 
 ## Before Running
 
@@ -24,6 +24,7 @@ npx kenobi-pages workflows
 If there are multiple workflows, ask which one to use. If there's only one, confirm it:
 
 > I found a workflow called "Post-Call Landing Page" (ID: 42). It requires these parameters:
+>
 > - `slug` — URL slug for the page
 > - `company_domain` — the lead's company domain
 >
@@ -46,6 +47,7 @@ Derive the slug from the company name (e.g., "Acme Corp" -> `acme-corp`).
 Ask if they have additional context for the AI:
 
 > Do you have any context I should pass along? For example:
+>
 > - A call transcript or meeting notes
 > - Specific talking points to emphasize
 > - Tone or style preferences for this particular lead
@@ -59,6 +61,7 @@ Context is ephemeral — it's prepended to the AI generation prompts for this ru
 Runs consume AI generation credits. Always confirm:
 
 > I'm about to run the "Post-Call Landing Page" workflow for **acme-corp**. This will:
+>
 > - Look up Acme Corp's data from HubSpot
 > - Generate personalized content using AI
 > - Store it so the page at `/for/acme-corp` renders the content
@@ -106,6 +109,7 @@ Ask for all the leads:
 ### 2. Confirm the batch
 
 > I'll run the workflow for these 5 leads:
+>
 > 1. acme-corp (acme.com)
 > 2. globex (globex.com)
 > 3. initech (initech.com)

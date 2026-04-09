@@ -7,9 +7,9 @@ description: Build a Next.js dynamic route that renders personalized, AI-generat
 
 This skill covers creating the Next.js page that renders personalized content fetched from Kenobi at runtime.
 
-## Prerequisite
+## Prerequisite — Do Not Skip
 
-You should only be here because you completed Phase 1 (Discovery) and Phase 2 (Setup) from the parent skill (`kenobi-pages/SKILL.md`). If you haven't asked the user whether they have a workflow and completed setup, go back and do that first.
+You must have already completed the discovery question and setup from the parent skill (`kenobi-pages/SKILL.md`). If the user hasn't been asked whether they have a workflow yet, STOP — go back to the parent skill and start from Phase 1. Do not continue reading this file.
 
 ## Determine the Mode
 
