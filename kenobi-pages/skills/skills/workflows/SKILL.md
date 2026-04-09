@@ -121,6 +121,7 @@ Key rules:
 - Fields bound to `generate` or `generate-image` reference a `generationGroups` entry by `groupId`
 - A generation group has a `system` prompt, a `strategy` ("generate" or "generate-image"), and `contextSources` listing which source data the AI sees
 - Source `resolution` determines how data is fetched: `single` (take first record), `lookup` (filter by a param value), or `collection` (fetch all, optionally with AI selection)
+- **Connections are auto-resolved** — you do NOT need to include `connectionRef` on sources. Cortex automatically resolves the connection from the source's `dataSourceKey` using the connection that was established when the data source was originally connected (e.g. via Notion OAuth). Only specify `connectionRef` if you need to override to a different connection than the one discovered with the source.
 
 ### 5. Confirm before creating
 
