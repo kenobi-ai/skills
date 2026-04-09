@@ -25,7 +25,7 @@ You should already know which mode to use from the discovery question in the par
 
 ## Forward Mode — Build a Page From an Existing Schema
 
-The workflow already exists. You need to discover the schema, set up the types, and build the dynamic route.
+The workflow already exists. You need to discover the schema and build the dynamic route.
 
 ### 1. Get the workflow ID
 
@@ -37,14 +37,13 @@ npx kenobi-pages workflows
 
 Ask the user which workflow this page is for.
 
-### 2. Fetch the schema and generate types
+### 2. Fetch the schema
 
 ```bash
 npx kenobi-pages schema get <workflowId>
-npx kenobi-pages types <workflowId> > lib/kenobi-types.ts
 ```
 
-Review the generated types. Tell the user what fields will be available on the page. For example:
+Review the schema. Define a TypeScript interface in the project that matches the field names and types. Tell the user what fields will be available on the page. For example:
 
 > Your workflow produces these fields for each lead:
 >

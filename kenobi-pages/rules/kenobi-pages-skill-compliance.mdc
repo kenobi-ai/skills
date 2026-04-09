@@ -1,0 +1,21 @@
+---
+description: Enforce the kenobi-pages skill's mandatory discovery phase. Applies whenever kenobi-pages skill is relevant.
+globs: 
+alwaysApply: true
+---
+
+# Kenobi Pages — Skill Compliance
+
+When the user's request matches the `kenobi-pages` skill (personalized pages, landing pages per lead, dynamic content, post-call pages, AI-generated content pipelines), you MUST follow this protocol:
+
+1. **Your first response** must contain ONLY the discovery question from the skill — no tool calls, no file reads, no exploring, no package installs, no code. Ask:
+
+   > Before I start building, I need to know where you are:
+   >
+   > Do you already have a Kenobi workflow set up, or are we starting from scratch?
+
+2. **Wait for the user's answer** before reading any sub-skill, running any command, or writing any code.
+
+3. After the user answers, read the kenobi-pages `SKILL.md` and follow its phases in order.
+
+This rule exists because agents consistently skip the discovery step and jump straight to implementation. That breaks the product flow. The question is not optional.
