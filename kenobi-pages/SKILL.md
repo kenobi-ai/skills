@@ -5,15 +5,29 @@ description: Build personalized landing pages with AI-generated content from Ken
 
 # STOP — Read This Before Doing Anything
 
-When this skill applies, your **very first response** to the user must be the discovery question below — and **nothing else**. No tool calls. No file reads. No exploring. No installing packages. No planning. No "let me check the project first." Your entire first message is:
+When this skill applies, your very first action is to check whether `npx kenobi-pages init` has been run. Look for `KENOBI_PAGES_KEY` in the project's env files (`.env.local`, `.env`, etc.). You may read these files — but do nothing else (no installs, no code, no exploring the codebase).
 
-> Before I start building, I need to know where you are:
->
-> Do you already have a Kenobi workflow set up, or are we starting from scratch?
+Then your **first response** to the user must cover exactly two things — and nothing else:
 
-Send that message. Stop. Wait for the user's reply. Only after they answer do you proceed to Phase 2.
+1. **Init status.** If `KENOBI_PAGES_KEY` is missing, tell the user they need to run `npx kenobi-pages init` first, and briefly explain why:
 
-If you are tempted to "just get started" or "explore the project while asking" — don't. That is the single most common failure mode with this skill. The discovery question IS the first step. Everything else comes after.
+   > Before we begin — you'll need to connect this project to your Kenobi account. Run this in your terminal:
+   >
+   > ```
+   > npx kenobi-pages init
+   > ```
+   >
+   > This saves your API key so the CLI and SDK can talk to Kenobi. Let me know once that's done.
+
+   If the key is already present, skip this and move straight to the discovery question.
+
+2. **Discovery question.** Ask:
+
+   > Do you already have a Kenobi workflow set up, or are we starting from scratch?
+
+Send that message. Stop. Wait for the user's reply. Only after they answer (and init is confirmed done) do you proceed to Phase 2.
+
+If you are tempted to "just get started" or "explore the project while asking" — don't. That is the single most common failure mode with this skill.
 
 ---
 
@@ -27,20 +41,20 @@ The system has three parts: a **page** (Next.js dynamic route), a **workflow** (
 
 Based on the user's answer to the discovery question:
 
-| User says                                                 | Sub-skill                                                                                                                          | Mode    |
-| --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| "I have a workflow and want to build the page"            | `skills/pages/SKILL.md`                                                                                                            | Forward |
-| "I have a page and want to make it personalized"          | `skills/pages/SKILL.md`                                                                                                            | Reverse |
-| "I need to create a workflow" / "starting from scratch"   | `skills/workflows/SKILL.md`                                                                                                        | —       |
-| "I want to generate content for leads" / "run a workflow" | `skills/run/SKILL.md`                                                                                                              | —       |
-| Not sure / vague                                          | Ask: "Do you have an existing page you'd like to personalize, or should I design one from scratch?" Then route to pages sub-skill. | —       |
+| User says                                                 | Sub-skill                  | Mode    |
+| --------------------------------------------------------- | -------------------------- | ------- |
+| "I have a workflow and want to build the page"            | `skills/pages/SKILL.md`    | Forward |
+| "I have a page and want to make it personalized"          | `skills/pages/SKILL.md`    | Reverse |
+| "I need to create a workflow" / "starting from scratch"   | `skills/workflows/SKILL.md`| —       |
+| "I want to generate content for leads" / "run a workflow" | `skills/run/SKILL.md`      | —       |
+| Not sure / vague                                          | Ask: "Do you have an existing page you'd like to personalize, or should I design one from scratch?" Then route to pages sub-skill. | — |
 
 ## Phase 3 — Setup
 
 Before writing any code, ensure the environment is ready:
 
 1. Install: `pnpm add kenobi-pages`
-2. Check if `KENOBI_PAGES_KEY` is already in `.env.local`. If not, ask the user to run `npx kenobi-pages init` in their terminal — this interactively prompts for their API key and saves it to `~/.kenobi/config.json` and `.env.local`.
+2. `KENOBI_PAGES_KEY` should already be in an env file from init. If not, ask the user to run `npx kenobi-pages init`.
 3. Create `lib/kenobi.ts` (if it doesn't exist):
 
 ```ts
