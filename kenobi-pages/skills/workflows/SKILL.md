@@ -116,7 +116,7 @@ A workflow config is a JSON object. Here's the structure — fill in the values 
 
 Key rules:
 - `id` must match the workflow slug
-- Every workflow must have a `slug` field bound to `{ "strategy": "param", "paramName": "slug" }`
+- **The `slug` field must appear in three places:** `output.schema` (so its value is included in the output), `fields` (bound to `{ "strategy": "param", "paramName": "slug" }`), and `destinations[].adapterConfig.slugField`. If it's missing from `output.schema`, runs will succeed but content will be stored under an auto-generated slug instead of the one you passed — and pages will 404
 - Each output field needs a binding: `param` (copy from runtime parameter), `passthrough` (copy from source field), `generate` (AI text), or `generate-image` (AI image)
 - Fields bound to `generate` or `generate-image` reference a `generationGroups` entry by `groupId`
 - A generation group has a `system` prompt, a `strategy` ("generate" or "generate-image"), and `contextSources` listing which source data the AI sees. Image groups also have `prompt` (task-specific directive), `images` (input images), and `imageConfig` — see the reference section below
