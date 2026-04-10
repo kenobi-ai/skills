@@ -77,7 +77,7 @@ The route directory should contain:
 The `page.tsx` server component should:
 
 - Import and use the `kenobi` client (from wherever it was placed during setup — see parent skill Phase 3)
-- Call `kenobi.getPage(WORKFLOW_ID, slug)` with caching options
+- Call `kenobi.getPage(WORKFLOW_ID, slug)` with caching options — `WORKFLOW_ID` can be the numeric ID (e.g. `42`) or the workflow slug (e.g. `"post-call-page"`)
 - Cast `page.content` to the type from `types.ts`
 - Pass the typed content to the `view.tsx` component
 
@@ -90,6 +90,8 @@ If no workflow runs have completed yet, add realistic mock data to `content.ts` 
 ```ts
 if (!page && process.env.NODE_ENV === "development") return PLACEHOLDER_CONTENT;
 ```
+
+**Page-first flow (Path A):** If the workflow doesn't exist yet (the user is designing the page before building the workflow), `getPage` will return `null` since the workflow can't be found. The placeholder fallback above handles this — the page renders with mock data during development, and real content flows once a workflow exists and has been run.
 
 Tell the user to remove the placeholder once real content is flowing.
 
@@ -167,16 +169,16 @@ Replace hardcoded content with the same pattern as forward mode — `kenobi.getP
 
 When constructing a schema (for `schema push` or inside a workflow config's `output.schema`), use these field type definitions:
 
-| Type | Syntax | Notes |
-|---|---|---|
-| String | `{ "type": "string" }` | Optional: `min`, `max` (character counts) |
-| URL | `{ "type": "url" }` | Validated as a well-formed URL |
-| Number | `{ "type": "number" }` | Optional: `min`, `max`, `integer: true` |
-| Boolean | `{ "type": "boolean" }` | |
-| Enum | `{ "type": "enum", "values": ["a", "b"] }` | |
-| Object | `{ "type": "object", "fields": { "title": { "type": "string" } } }` | Use `fields`, not `properties` |
-| Array of objects | `{ "type": "array", "items": { "type": "object", "fields": { ... } }, "min": 1, "max": 5 }` | `min`/`max` are optional |
-| Array of primitives | `{ "type": "array", "items": { "type": "string" } }` | |
+| Type                | Syntax                                                                                      | Notes                                     |
+| ------------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| String              | `{ "type": "string" }`                                                                      | Optional: `min`, `max` (character counts) |
+| URL                 | `{ "type": "url" }`                                                                         | Validated as a well-formed URL            |
+| Number              | `{ "type": "number" }`                                                                      | Optional: `min`, `max`, `integer: true`   |
+| Boolean             | `{ "type": "boolean" }`                                                                     |                                           |
+| Enum                | `{ "type": "enum", "values": ["a", "b"] }`                                                  |                                           |
+| Object              | `{ "type": "object", "fields": { "title": { "type": "string" } } }`                         | Use `fields`, not `properties`            |
+| Array of objects    | `{ "type": "array", "items": { "type": "object", "fields": { ... } }, "min": 1, "max": 5 }` | `min`/`max` are optional                  |
+| Array of primitives | `{ "type": "array", "items": { "type": "string" } }`                                        |                                           |
 
 Every field also accepts optional `description` (string, included in AI prompts) and `optional` (boolean).
 
@@ -186,7 +188,7 @@ Every field also accepts optional `description` (string, included in AI prompts)
 
 ## Error Handling
 
-`getPage` returns `null` when content doesn't exist for a slug — it does not throw. Handle it with `notFound()`.
+`getPage` returns `null` when content doesn't exist — whether the slug has no content, the workflow doesn't exist, or the workflow ID/slug doesn't resolve. Handle it with `notFound()`.
 
 For API key issues, the SDK throws `KenobiUnauthorizedError`. Catch it if you want custom error UI, otherwise let it bubble to the error boundary.
 

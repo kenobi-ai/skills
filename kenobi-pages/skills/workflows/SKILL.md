@@ -119,7 +119,7 @@ Key rules:
 - Every workflow must have a `slug` field bound to `{ "strategy": "param", "paramName": "slug" }`
 - Each output field needs a binding: `param` (copy from runtime parameter), `passthrough` (copy from source field), `generate` (AI text), or `generate-image` (AI image)
 - Fields bound to `generate` or `generate-image` reference a `generationGroups` entry by `groupId`
-- A generation group has a `system` prompt, a `strategy` ("generate" or "generate-image"), and `contextSources` listing which source data the AI sees
+- A generation group has a `system` prompt, a `strategy` ("generate" or "generate-image"), and `contextSources` listing which source data the AI sees. Image groups also have `prompt` (task-specific directive), `images` (input images), and `imageConfig` — see the reference section below
 - Source `resolution` determines how data is fetched: `single` (take first record), `lookup` (filter by a param value), or `collection` (fetch all, optionally with AI selection)
 - **Connections are auto-resolved** — you do NOT need to include `connectionRef` on sources. Cortex automatically resolves the connection from the source's `dataSourceKey` using the connection that was established when the data source was originally connected (e.g. via Notion OAuth). Only specify `connectionRef` if you need to override to a different connection than the one discovered with the source.
 
@@ -157,7 +157,7 @@ The `.kenobi/workflows/` directory is for workflow infrastructure files only —
 
 ---
 
-## Full Example Config
+## Full Example Config — Text Generation
 
 A workflow that reads HubSpot contacts and generates landing page content:
 
@@ -258,16 +258,173 @@ Every output field needs a binding in the `fields` object. Each strategy has its
 | `generate` | `groupId` | AI-generated text; references a generation group |
 | `generate-image` | `groupId` | AI-generated image; references a generation group |
 
-### Generation Group Keys
-
-Each entry in `generationGroups` supports these keys:
+### Generation Group Keys — Text (`"generate"`)
 
 | Key | Required | Description |
 |---|---|---|
 | `id` | yes | Unique identifier; referenced by field bindings via `groupId` |
-| `strategy` | yes | `"generate"` for text, `"generate-image"` for images |
-| `system` | yes | System prompt for AI generation |
-| `contextSources` | yes | Array of `{ "sourceId": "<source-id>" }` — which source data the AI sees |
+| `strategy` | yes | `"generate"` |
+| `system` | yes | System prompt — global context and instructions for the AI |
+| `contextSources` | yes | Array of source refs — which source data the AI sees (see below) |
+
+A text generation group can target multiple output fields — list them all with `{ "strategy": "generate", "groupId": "<id>" }` in `fields`. The AI produces all of them in a single call.
+
+### Generation Group Keys — Image (`"generate-image"`)
+
+| Key | Required | Description |
+|---|---|---|
+| `id` | yes | Unique identifier; referenced by field bindings via `groupId` |
+| `strategy` | yes | `"generate-image"` |
+| `system` | yes | System prompt — high-level context (brand, tone, constraints) |
+| `prompt` | recommended | Task-specific instruction — what to change, preserve, and produce. Supports template variables: `{sourceId.fieldName}` |
+| `contextSources` | yes | Array of source refs — text data the AI sees alongside images |
+| `images` | recommended | Image inputs (see below) |
+| `imageConfig` | optional | Tuning options for the image generation pipeline |
+| `transparentBackground` | optional | When `true`, strips the output image background via chroma key |
+
+An image generation group targets exactly **one** output field.
+
+#### `images` object
+
+Declares which source images are inputs to the generation call:
+
+```json
+"images": {
+  "primary": { "sourceId": "lead-data", "field": "Hero Image", "label": "Original hero" },
+  "references": [
+    { "sourceId": "brand-assets", "field": "Logo", "label": "Brand logo" },
+    { "sourceId": "brand-assets", "field": "Product Screenshot", "label": "Product UI" }
+  ]
+}
+```
+
+| Key | Type | Description |
+|---|---|---|
+| `primary` | `ImageSourceRef` (optional) | The base/template image to edit or reskin |
+| `references` | `ImageSourceRef[]` (optional) | Additional reference images for style, branding, or constraint guidance |
+
+Each `ImageSourceRef` has:
+- `sourceId` — which workflow source contains the image
+- `field` — the field name on that source holding the image URL
+- `label` — (optional) human-readable description of this image's role; included in the AI prompt
+
+#### `prompt` vs `system`
+
+For text generation, `system` alone is sufficient. For image generation, use both:
+
+- **`system`** — broad context: brand guidelines, audience, visual style, what the page is for
+- **`prompt`** — surgical directive: exactly what to change in the primary image, what to preserve, what dimensions/aspect ratio to target
+
+Template variables in `prompt` reference source data: `{sourceId.fieldName}` resolves to the value from the resolved source record. Use these to inject lead-specific details into the image prompt.
+
+**Prompt quality matters enormously for image generation.** Vague prompts like "personalize this image" produce poor results. When reskinning a template image, the prompt must be surgically specific — describe exactly which elements to replace, what to preserve, and what constraints the output must satisfy. Here's a real-world example:
+
+```json
+{
+  "system": "You are a graphic designer reskinning product UI screenshots for personalized landing pages.",
+  "prompt": "The first image is a product UI screenshot for a template brand. Your job is to replace all instances of the template brand in this image in order to reskin it to {lead-data.Name}. You must keep the LAYOUT, SIZE, and STRUCTURE exactly the same — only surgically alter branding elements: logos, brand name text, brand colors, and any product imagery specific to the template. Replace them with {lead-data.Name} equivalents. The remaining images contain {lead-data.Name} brand assets from their website — use their logo, color palette, and visual identity as your reference for the replacement. You MUST NOT exercise artistic licence. Keep the vibe, composition, style, and proportions of the original image identical. The output must match the exact aspect ratio and shape of the first image — do not crop, pad, or reshape it."
+}
+```
+
+Notice the level of specificity: it names exactly what to change (logos, brand text, colors, product imagery), what to preserve (layout, size, structure, composition, proportions, aspect ratio), and where to find the replacement assets (reference images). This is the bar for image generation prompts.
+
+#### `imageConfig` options
+
+| Key | Type | Default | Description |
+|---|---|---|---|
+| `preAnalyze` | boolean | `false` | Run a text-only LLM pre-pass on the primary image to produce an element inventory before generation |
+| `dimensionConstraint` | boolean | `false` | Auto-detect primary image dimensions and inject aspect ratio constraint into the prompt |
+| `candidateCount` | number | `3` | Number of candidate images to generate; the best is selected by an LLM judge. Set to `1` to skip judging |
+
+### Context Source Scoping
+
+By default, a `contextSources` entry includes **all fields** from the referenced source. You can scope to specific fields with the optional `fields` array:
+
+```json
+"contextSources": [
+  { "sourceId": "lead-data", "fields": ["Name", "Company", "Hero Image"] },
+  { "sourceId": "brand-assets" }
+]
+```
+
+This is particularly important for image generation — sending irrelevant text fields as context can dilute the model's focus. Include only the fields the AI needs to see.
+
+## Full Example Config — Image Generation
+
+A workflow that takes a template hero image and reskins it with lead-specific branding:
+
+```json
+{
+  "id": "branded-hero",
+  "description": "Generate personalized hero images by reskinning a template with the lead's brand assets.",
+  "params": [
+    { "name": "slug", "description": "URL slug for the page" },
+    { "name": "company_domain", "description": "Lead company domain for asset lookup" }
+  ],
+  "sources": [
+    {
+      "id": "lead-data",
+      "provider": "notion",
+      "dataSourceKey": "notion:leads-db",
+      "title": "Lead Database",
+      "schema": {
+        "Name": { "type": "string" },
+        "Domain": { "type": "string" },
+        "Hero Original Image": { "type": "url" },
+        "Logo": { "type": "url" }
+      },
+      "resolution": { "kind": "lookup", "field": "Domain", "param": "company_domain" }
+    }
+  ],
+  "output": {
+    "provider": "kenobi-pages",
+    "dataSourceKey": "kenobi-pages:branded-hero",
+    "title": "Branded Hero Page",
+    "schema": {
+      "slug": { "type": "string", "description": "URL slug" },
+      "company_name": { "type": "string", "description": "Lead company name" },
+      "hero_image_url": { "type": "url", "description": "Personalized hero image" }
+    }
+  },
+  "fields": {
+    "slug": { "strategy": "param", "paramName": "slug" },
+    "company_name": { "strategy": "passthrough", "sourceId": "lead-data", "sourceField": "Name" },
+    "hero_image_url": { "strategy": "generate-image", "groupId": "hero-gen" }
+  },
+  "generationGroups": [
+    {
+      "id": "hero-gen",
+      "strategy": "generate-image",
+      "system": "You are a graphic designer reskinning product UI screenshots for personalized B2B SaaS landing pages.",
+      "prompt": "The first image is a product UI screenshot for a template brand. Your job is to replace all instances of the template brand in this image in order to reskin it to {lead-data.Name}. You must keep the LAYOUT, SIZE, and STRUCTURE exactly the same — only surgically alter branding elements: logos, brand name text, brand colors, and any product imagery specific to the template. Replace them with {lead-data.Name} equivalents. The remaining images contain {lead-data.Name} brand assets — use their logo, color palette, and visual identity as your reference for the replacement. You MUST NOT exercise artistic licence. Keep the vibe, composition, style, and proportions of the original image identical. The output must match the exact aspect ratio and shape of the first image — do not crop, pad, or reshape it.",
+      "contextSources": [
+        { "sourceId": "lead-data", "fields": ["Name", "Domain"] }
+      ],
+      "images": {
+        "primary": { "sourceId": "lead-data", "field": "Hero Original Image", "label": "Template hero" },
+        "references": [
+          { "sourceId": "lead-data", "field": "Logo", "label": "Lead's company logo" }
+        ]
+      },
+      "imageConfig": {
+        "preAnalyze": true,
+        "dimensionConstraint": true,
+        "candidateCount": 3
+      }
+    }
+  ],
+  "destinations": [
+    { "id": "pages-dest", "adapter": "kenobi-pages", "adapterConfig": { "slugField": "slug" } }
+  ]
+}
+```
+
+Key differences from text workflows:
+- The generation group uses `"strategy": "generate-image"` and targets exactly one field (`hero_image_url`)
+- `images` declares primary and reference inputs by source + field
+- `prompt` is the task-specific directive (separate from `system`)
+- `contextSources` is scoped to only the fields the AI needs
+- `imageConfig` enables pre-analysis and candidate judging
 
 ---
 
