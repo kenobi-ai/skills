@@ -8,7 +8,7 @@ alwaysApply: true
 
 When the user's request matches the `kenobi-pages` skill (personalized pages, landing pages per lead, dynamic content, post-call pages, AI-generated content pipelines), you MUST follow this protocol:
 
-1. **Check init status.** Read the project's env files (`.env.local`, `.env`) and look for `KENOBI_PAGES_KEY`. This is the ONLY file read you may do before responding. If the key is missing, your first response must tell the user to run `npx kenobi-pages init` and explain that it connects the project to their Kenobi account.
+1. **Check init status.** Read the project's env files (`.env.local`, `.env`) and `~/.kenobi/config.json`, and look for `KENOBI_PAGES_KEY`. These are the ONLY file reads you may do before responding. If the key is missing, your first response must tell the user to run `npx kenobi-pages init` and explain that it connects the project to their Kenobi account.
 
 2. **Ask the discovery question.** Whether or not init is needed, your first response must include:
 

@@ -109,7 +109,7 @@ A workflow config is a JSON object. Here's the structure — fill in the values 
   },
   "generationGroups": [],
   "destinations": [
-    { "id": "pages", "adapter": "kenobi-pages-store", "adapterConfig": {} }
+    { "id": "pages", "adapter": "kenobi-pages", "adapterConfig": { "slugField": "slug" } }
   ]
 }
 ```
@@ -185,6 +185,7 @@ A workflow that reads HubSpot contacts and generates landing page content:
     "title": "Post-Call Page",
     "schema": {
       "slug": { "type": "string", "description": "URL slug" },
+      "company_name": { "type": "string", "description": "Lead company name (passed through from source)" },
       "headline": { "type": "string", "description": "Attention-grabbing personalized headline" },
       "value_proposition": { "type": "string", "description": "Why our product matters to this lead" },
       "use_cases": {
@@ -198,6 +199,7 @@ A workflow that reads HubSpot contacts and generates landing page content:
   },
   "fields": {
     "slug": { "strategy": "param", "paramName": "slug" },
+    "company_name": { "strategy": "passthrough", "sourceId": "hubspot-contacts", "sourceField": "company" },
     "headline": { "strategy": "generate", "groupId": "text-gen" },
     "value_proposition": { "strategy": "generate", "groupId": "text-gen" },
     "use_cases": { "strategy": "generate", "groupId": "text-gen" },
@@ -212,19 +214,23 @@ A workflow that reads HubSpot contacts and generates landing page content:
     }
   ],
   "destinations": [
-    { "id": "pages-dest", "adapter": "kenobi-pages-store", "adapterConfig": {} }
+    { "id": "pages-dest", "adapter": "kenobi-pages", "adapterConfig": { "slugField": "slug" } }
   ]
 }
 ```
 
 ## Modifying Workflows
 
-```bash
-# Get current config
-npx kenobi-pages workflow get <id>
+Config updates require the full config object — the API does not accept partial configs. Use the get-modify-put pattern:
 
-# Update (partial — only send what changed)
-npx kenobi-pages workflow update <id> --config '<json>'
+```bash
+# 1. Get the full current config
+npx kenobi-pages workflow get <id> > workflow.json
+# 2. Edit workflow.json
+# 3. Push the full config back
+npx kenobi-pages workflow update <id> --file workflow.json
+
+# Name and description can still be updated independently:
 npx kenobi-pages workflow update <id> --name "New Name"
 npx kenobi-pages workflow update <id> --description "New description"
 
@@ -233,6 +239,32 @@ npx kenobi-pages workflow delete <id>
 ```
 
 Always use `workflow get` before updating to avoid overwriting changes made in the Kenobi UI.
+
+## Reference
+
+### Field Binding Strategies
+
+Every output field needs a binding in the `fields` object. Each strategy has its own required properties:
+
+| Strategy | Required properties | Description |
+|---|---|---|
+| `param` | `paramName` | Copy value from a runtime parameter |
+| `passthrough` | `sourceId`, `sourceField` | Copy value from a source record field |
+| `generate` | `groupId` | AI-generated text; references a generation group |
+| `generate-image` | `groupId` | AI-generated image; references a generation group |
+
+### Generation Group Keys
+
+Each entry in `generationGroups` supports these keys:
+
+| Key | Required | Description |
+|---|---|---|
+| `id` | yes | Unique identifier; referenced by field bindings via `groupId` |
+| `strategy` | yes | `"generate"` for text, `"generate-image"` for images |
+| `system` | yes | System prompt for AI generation |
+| `contextSources` | yes | Array of `{ "sourceId": "<source-id>" }` — which source data the AI sees |
+
+---
 
 ## Tips
 

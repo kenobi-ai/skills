@@ -124,4 +124,6 @@ Trigger each run one at a time. Report progress after each completion:
 
 > Completed 2/5: acme-corp (success), globex (success). Running initech...
 
-If a run fails, report it and continue with the remaining leads. Ask the user if they want to retry failures at the end.
+If a run fails, read the error response carefully. Most failures at this stage trace back to workflow config issues — wrong field names, missing adapter config, or source lookup mismatches. Use `sources sample <sourceKey>` to verify that lookup values match the format in the source data. If the error is unclear, re-check the workflow config with `workflow get <id>` against the reference in the workflows skill.
+
+Report the failure to the user with the error details. Continue with remaining leads. Ask if they want to retry failures at the end.

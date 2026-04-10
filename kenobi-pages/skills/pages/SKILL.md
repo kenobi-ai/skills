@@ -77,7 +77,11 @@ if (!page && process.env.NODE_ENV === "development") return PLACEHOLDER_CONTENT;
 
 Tell the user to remove the placeholder once real content is flowing.
 
-### 5. Caching
+### 5. Verify
+
+Suggest the user starts their dev server and visits `/for/<slug>` to check the page renders correctly with placeholder data. If the user wants to see real content, offer to trigger a test run (see the **run** sub-skill).
+
+### 6. Caching
 
 Explain the caching options and ask what they want:
 
@@ -121,16 +125,21 @@ After confirmation, construct the schema JSON and push it:
 npx kenobi-pages schema push "Page Name" '{"fields":{...}}'
 ```
 
-Tell the user what to do next:
+After the schema is pushed, offer the user a choice:
 
-> Schema pushed to Kenobi. Next steps:
+> Schema pushed to Kenobi. I can create a workflow that targets this schema now, or you can set it up yourself in the Kenobi UI. Want me to build the workflow?
+
+If yes, read the **workflows** sub-skill and continue — the schema is already defined, so skip step 3 (Define the output schema) and go straight to assembling the config.
+
+If no, explain what they'll need to do in the UI before the agent can resume:
+
+> To finish setup in the Kenobi UI:
 >
-> 1. Go to the Kenobi workflow builder
-> 2. Select this schema as your output target
-> 3. Connect your data sources and configure AI generation
-> 4. Run the workflow for your leads
+> 1. Go to the workflow builder and select this schema as your output target
+> 2. Connect your data sources and configure AI generation
+> 3. Run the workflow for your leads
 >
-> Once a workflow is configured, I can refactor this page to fetch content dynamically. Want me to do that now with placeholder data, or wait until the workflow is ready?
+> Once a workflow is configured, come back and I can refactor this page to fetch content dynamically.
 
 ### 4. Refactor the page
 

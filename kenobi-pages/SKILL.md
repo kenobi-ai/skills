@@ -5,7 +5,7 @@ description: Build personalized landing pages with AI-generated content from Ken
 
 # STOP — Read This Before Doing Anything
 
-When this skill applies, your very first action is to check whether `npx kenobi-pages init` has been run. Look for `KENOBI_PAGES_KEY` in the project's env files (`.env.local`, `.env`, etc.). You may read these files — but do nothing else (no installs, no code, no exploring the codebase).
+When this skill applies, your very first action is to check whether `npx kenobi-pages init` has been run. Look for `KENOBI_PAGES_KEY` in the project's env files (`.env.local`, `.env`, etc.) or in `~/.kenobi/config.json`. You may read these files — but do nothing else (no installs, no code, no exploring the codebase).
 
 Then your **first response** to the user must cover exactly two things — and nothing else:
 
@@ -41,19 +41,44 @@ The system has three parts: a **page** (Next.js dynamic route), a **workflow** (
 
 Based on the user's answer to the discovery question:
 
-| User says                                                 | Sub-skill                  | Mode    |
-| --------------------------------------------------------- | -------------------------- | ------- |
-| "I have a workflow and want to build the page"            | `skills/pages/SKILL.md`    | Forward |
-| "I have a page and want to make it personalized"          | `skills/pages/SKILL.md`    | Reverse |
-| "I need to create a workflow" / "starting from scratch"   | `skills/workflows/SKILL.md`| —       |
-| "I want to generate content for leads" / "run a workflow" | `skills/run/SKILL.md`      | —       |
-| Not sure / vague                                          | Ask: "Do you have an existing page you'd like to personalize, or should I design one from scratch?" Then route to pages sub-skill. | — |
+| User says                                                 | Sub-skill                                                                                                                          | Mode    |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| "I have a workflow and want to build the page"            | `skills/pages/SKILL.md`                                                                                                            | Forward |
+| "I have a page and want to make it personalized"          | `skills/pages/SKILL.md`                                                                                                            | Reverse |
+| "I need to create a workflow" / "starting from scratch"   | `skills/workflows/SKILL.md`                                                                                                        | —       |
+| "I want to generate content for leads" / "run a workflow" | `skills/run/SKILL.md`                                                                                                              | —       |
+| Not sure / vague                                          | Ask: "Do you have an existing page you'd like to personalize, or should I design one from scratch?" Then route to pages sub-skill. | —       |
+
+## Full Pipeline — Starting From Scratch
+
+When the user says "starting from scratch" or wants the whole thing end-to-end, replace the generic discovery question with:
+
+> Do you want to start by designing how the page looks, or by setting up the data pipeline?
+
+Then follow one of these paths straight through — do not re-ask discovery or re-check prerequisites between sub-skills.
+
+**Path A — Page-first (default, recommended for most users):**
+
+1. Design the page collaboratively — layout, copy structure, visual feel (`skills/pages/SKILL.md`, reverse mode)
+2. Infer the output schema from the page design and push it
+3. Build the workflow around that schema (`skills/workflows/SKILL.md`)
+4. Run a test lead and verify (`skills/run/SKILL.md`)
+
+**Path B — Workflow-first:**
+
+1. Define sources, output schema, and generation config (`skills/workflows/SKILL.md`)
+2. Build the page around the schema (`skills/pages/SKILL.md`, forward mode)
+3. Run a test lead and verify (`skills/run/SKILL.md`)
+
+Path A is the better default — most users think visually and want to iterate on the page design before worrying about data plumbing.
+
+---
 
 ## Phase 3 — Setup
 
 Before writing any code, ensure the environment is ready:
 
-1. Install: `pnpm add kenobi-pages`
+1. Install `kenobi-pages` using the project's package manager (check for `pnpm-lock.yaml`, `package-lock.json`, `yarn.lock`, or `bun.lockb` to determine which one).
 2. `KENOBI_PAGES_KEY` should already be in an env file from init. If not, ask the user to run `npx kenobi-pages init`.
 3. Create `lib/kenobi.ts` (if it doesn't exist):
 
@@ -62,8 +87,11 @@ import { createKenobiPagesClient } from "kenobi-pages";
 
 export const kenobi = createKenobiPagesClient({
   apiKey: process.env.KENOBI_PAGES_KEY!,
+  baseUrl: process.env.KENOBI_BASE_URL,
 });
 ```
+
+If this project uses an env validation library (e.g. `@t3-oss/env-nextjs`), add `KENOBI_PAGES_KEY` and `KENOBI_BASE_URL` to its schema and import from there instead of reading `process.env` directly.
 
 If the package is already installed and `lib/kenobi.ts` exists, skip this phase.
 
