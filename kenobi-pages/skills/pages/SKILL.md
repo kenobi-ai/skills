@@ -163,6 +163,27 @@ Replace hardcoded content with the same pattern as forward mode — `kenobi.getP
 
 ---
 
+## Schema Field Types Reference
+
+When constructing a schema (for `schema push` or inside a workflow config's `output.schema`), use these field type definitions:
+
+| Type | Syntax | Notes |
+|---|---|---|
+| String | `{ "type": "string" }` | Optional: `min`, `max` (character counts) |
+| URL | `{ "type": "url" }` | Validated as a well-formed URL |
+| Number | `{ "type": "number" }` | Optional: `min`, `max`, `integer: true` |
+| Boolean | `{ "type": "boolean" }` | |
+| Enum | `{ "type": "enum", "values": ["a", "b"] }` | |
+| Object | `{ "type": "object", "fields": { "title": { "type": "string" } } }` | Use `fields`, not `properties` |
+| Array of objects | `{ "type": "array", "items": { "type": "object", "fields": { ... } }, "min": 1, "max": 5 }` | `min`/`max` are optional |
+| Array of primitives | `{ "type": "array", "items": { "type": "string" } }` | |
+
+Every field also accepts optional `description` (string, included in AI prompts) and `optional` (boolean).
+
+**Important:** Nested objects use `fields` for their children, not `properties`. The API will accept `properties` as an alias, but always write `fields` in your configs.
+
+---
+
 ## Error Handling
 
 `getPage` returns `null` when content doesn't exist for a slug — it does not throw. Handle it with `notFound()`.

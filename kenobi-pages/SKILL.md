@@ -5,7 +5,7 @@ description: Build personalized landing pages with AI-generated content from Ken
 
 # STOP — Read This Before Doing Anything
 
-When this skill applies, your very first action is to check whether `npx kenobi-pages init` has been run. Look for `KENOBI_PAGES_KEY` in the project's env files (`.env.local`, `.env`, etc.) or in `~/.kenobi/config.json`. You may read these files — but do nothing else (no installs, no code, no exploring the codebase).
+When this skill applies, your very first action is to check whether `npx kenobi-pages init` has been run. Look for `KENOBI_PAGES_KEY` in the project's env files (`.env.local`, `.env`, etc.). You may read these files — but do nothing else (no installs, no code, no exploring the codebase).
 
 Then your **first response** to the user must cover exactly two things — and nothing else:
 
@@ -115,4 +115,4 @@ Now read the sub-skill identified in Phase 2 and follow its instructions.
 - The SDK (`kenobi-pages` npm package) does one thing: `getPage(workflowId, slug)` fetches content for a specific lead at runtime. That's it. Everything else — schema management, workflow CRUD, triggering runs — is done via the `npx kenobi-pages` CLI.
 - A **workflow** is a pipeline configured in Kenobi that takes data from sources (Notion, HubSpot, etc.), runs AI generation, and stores personalized content keyed by a slug.
 - A **slug** is the URL-friendly identifier for a lead (e.g., `acme-corp`). Every workflow run produces content for one slug.
-- The CLI reads the API key from `KENOBI_PAGES_KEY` env var or `~/.kenobi/config.json`. All commands output JSON to stdout and status messages to stderr.
+- The CLI reads `KENOBI_PAGES_KEY` and `KENOBI_BASE_URL` from shell environment variables or the project's env files (`.env.local`, `.env`, etc.) in the working directory. All commands output JSON to stdout and status messages to stderr.
