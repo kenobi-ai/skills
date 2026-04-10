@@ -20,10 +20,10 @@ npx kenobi-pages workflows
 If a workflow already exists and the user wants to modify it:
 
 ```bash
-npx kenobi-pages workflow get <id>
+npx kenobi-pages workflow get <id> > .kenobi/workflows/<slug>.json
 ```
 
-This returns the full config JSON. Edit it and push it back with `workflow update`.
+This saves the full config JSON. Edit the file and push it back with `workflow update`.
 
 If starting fresh, continue below.
 
@@ -140,15 +140,20 @@ Show the user a summary of what you're about to create. Do not proceed without c
 
 ### 6. Create
 
+Save the config to `.kenobi/workflows/<slug>.json` (create the directory if it doesn't exist) and pass it to the CLI:
+
 ```bash
+mkdir -p .kenobi/workflows
 npx kenobi-pages workflow create \
   --name "<name>" \
   --slug "<slug>" \
   --description "<description>" \
-  --file workflow-config.json
+  --file .kenobi/workflows/<slug>.json
 ```
 
-Or pass the config inline with `--config '<json>'`.
+Or for simple configs, pass inline with `--config '<json>'`.
+
+The `.kenobi/workflows/` directory is for workflow infrastructure files only — like `.github/workflows/`. It keeps config out of your app code. The file is your declarative workflow definition; the API is the source of truth once pushed.
 
 ---
 
@@ -225,10 +230,10 @@ Config updates require the full config object — the API does not accept partia
 
 ```bash
 # 1. Get the full current config
-npx kenobi-pages workflow get <id> > workflow.json
-# 2. Edit workflow.json
+npx kenobi-pages workflow get <id> > .kenobi/workflows/<slug>.json
+# 2. Edit .kenobi/workflows/<slug>.json
 # 3. Push the full config back
-npx kenobi-pages workflow update <id> --file workflow.json
+npx kenobi-pages workflow update <id> --file .kenobi/workflows/<slug>.json
 
 # Name and description can still be updated independently:
 npx kenobi-pages workflow update <id> --name "New Name"

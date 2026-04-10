@@ -37,13 +37,13 @@ npx kenobi-pages workflows
 
 Ask the user which workflow this page is for.
 
-### 2. Fetch the schema
+### 2. Fetch the schema and generate types
 
 ```bash
 npx kenobi-pages schema get <workflowId>
 ```
 
-Review the schema. Define a TypeScript interface in the project that matches the field names and types. Tell the user what fields will be available on the page. For example:
+Review the schema. Tell the user what fields will be available on the page:
 
 > Your workflow produces these fields for each lead:
 >
@@ -55,21 +55,37 @@ Review the schema. Define a TypeScript interface in the project that matches the
 >
 > I'll build a page that renders all of these. Sound good?
 
+Generate the TypeScript interface and place it inside the route directory:
+
+```bash
+npx kenobi-pages schema codegen <workflowId> > app/for/[slug]/types.ts
+```
+
+If the user prefers a different route path, adjust accordingly.
+
 ### 3. Build the dynamic route
 
-Create `app/for/[slug]/page.tsx` (or whatever route the user prefers). The page should:
+Create the route directory and page files. **All page-specific code goes inside the route directory** — this keeps things self-contained and means deleting the route cleans up everything.
 
-- Import and use the `kenobi` client from `lib/kenobi.ts`
-- Call `kenobi.getPage(WORKFLOW_ID, slug)` in a server component
-- Return `notFound()` if the page returns `null`
-- Use `{ revalidate: 60 }` (or whatever caching the user wants) as the third argument
-- Cast `page.content` to the generated type
+The route directory should contain:
+
+- `page.tsx` — the server component (calls `kenobi.getPage()`, returns `notFound()` if null)
+- `types.ts` — the TypeScript interface (generated in step 2)
+- `view.tsx` — the presentational component (receives typed content as props)
+- `content.ts` — content parsing and dev placeholder data
+
+The `page.tsx` server component should:
+
+- Import and use the `kenobi` client (from wherever it was placed during setup — see parent skill Phase 3)
+- Call `kenobi.getPage(WORKFLOW_ID, slug)` with caching options
+- Cast `page.content` to the type from `types.ts`
+- Pass the typed content to the `view.tsx` component
 
 The user's brand, layout preferences, and design system should drive the page design. Don't use a generic template — build it to match their project.
 
 ### 4. Placeholder content for development
 
-If no workflow runs have completed yet, create a placeholder file with realistic mock data matching the type interface. Use it as a fallback in development only:
+If no workflow runs have completed yet, add realistic mock data to `content.ts` matching the type interface. Use it as a fallback in development only:
 
 ```ts
 if (!page && process.env.NODE_ENV === "development") return PLACEHOLDER_CONTENT;
@@ -119,10 +135,10 @@ Do not proceed until the user confirms. They may want to add fields you missed o
 
 ### 3. Push the schema
 
-After confirmation, construct the schema JSON and push it:
+After confirmation, construct the schema JSON and push it inline — do not save a separate schema JSON file, as it's a one-shot operation:
 
 ```bash
-npx kenobi-pages schema push "Page Name" '{"fields":{...}}'
+npx kenobi-pages schema push "Page Name" '{"fields":{"headline":{"type":"string"},...}}'
 ```
 
 After the schema is pushed, offer the user a choice:
@@ -143,7 +159,7 @@ If no, explain what they'll need to do in the UI before the agent can resume:
 
 ### 4. Refactor the page
 
-Replace hardcoded content with the same pattern as forward mode — `kenobi.getPage()` in a server component, with placeholders for development.
+Replace hardcoded content with the same pattern as forward mode — `kenobi.getPage()` in a server component, with placeholders for development. Co-locate all new files (`types.ts`, `content.ts`, `view.tsx`) inside the route directory alongside the existing page.
 
 ---
 

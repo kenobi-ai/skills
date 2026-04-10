@@ -80,7 +80,7 @@ Before writing any code, ensure the environment is ready:
 
 1. Install `kenobi-pages` using the project's package manager (check for `pnpm-lock.yaml`, `package-lock.json`, `yarn.lock`, or `bun.lockb` to determine which one).
 2. `KENOBI_PAGES_KEY` should already be in an env file from init. If not, ask the user to run `npx kenobi-pages init`.
-3. Create `lib/kenobi.ts` (if it doesn't exist):
+3. Create the Kenobi client file (if it doesn't already exist). The file contains:
 
 ```ts
 import { createKenobiPagesClient } from "kenobi-pages";
@@ -91,9 +91,20 @@ export const kenobi = createKenobiPagesClient({
 });
 ```
 
+**Where to put this file:** Check if the project already has a shared utilities directory (`lib/`, `src/lib/`, `utils/`, `src/utils/`, `app/_lib/`, etc.). If one exists, put the client there (e.g. `src/lib/kenobi.ts`). If no shared directory exists, co-locate it inside the route directory you'll create in the pages sub-skill (e.g. `app/for/[slug]/kenobi.ts`). **Never create a new top-level `lib/` or `utils/` directory** just for this file.
+
 If this project uses an env validation library (e.g. `@t3-oss/env-nextjs`), add `KENOBI_PAGES_KEY` and `KENOBI_BASE_URL` to its schema and import from there instead of reading `process.env` directly.
 
-If the package is already installed and `lib/kenobi.ts` exists, skip this phase.
+If the package is already installed and the client file exists, skip this phase.
+
+### File organization principles
+
+These apply to all sub-skills:
+
+- **Co-locate page code with the route.** Types, content parsing, placeholder data, and view components all belong inside the route directory (e.g. `app/for/[slug]/types.ts`, `app/for/[slug]/content.ts`, `app/for/[slug]/view.tsx`). Deleting the route should clean up everything page-related.
+- **Workflow configs go in `.kenobi/workflows/`.** Like `.github/workflows/` — hidden, clearly infrastructure, not app code. Create this directory if it doesn't exist.
+- **Never persist intermediate artifacts.** Schema JSON is a one-shot push — use inline JSON, don't save a file. The schema is already embedded in the workflow config's `output.schema`.
+- **Never create a top-level directory without checking what exists.** Before creating any directory, read the project's existing structure and adapt to it.
 
 ## Phase 4 — Implementation
 
