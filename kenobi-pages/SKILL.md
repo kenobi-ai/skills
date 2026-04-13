@@ -11,7 +11,10 @@ Then your **first response** to the user must cover exactly two things — and n
 
 1. **Init status.** If `KENOBI_PAGES_KEY` is missing, tell the user they need to run `npx kenobi-pages init` first, and briefly explain why:
 
-   > Before we begin — you'll need to connect this project to your Kenobi account. Run this in your terminal:
+   > Before we begin — you'll need to connect this project to your Kenobi account.
+   >
+   > 1. Grab your API key from [kenobi.ai/setup](https://kenobi.ai/setup) (this is also where you can connect your data sources like Notion, HubSpot, etc.)
+   > 2. Run this in your terminal:
    >
    > ```
    > npx kenobi-pages init
@@ -26,6 +29,12 @@ Then your **first response** to the user must cover exactly two things — and n
    > Do you already have a Kenobi workflow set up, or are we starting from scratch?
 
 Send that message. Stop. Wait for the user's reply. Only after they answer (and init is confirmed done) do you proceed to Phase 2.
+
+3. **Source check.** Before routing to a sub-skill, run `npx kenobi-pages sources` to check whether the user has any data sources connected. If they answer "starting from scratch" or "I need to create a workflow" and **no sources are returned**, pause and tell them:
+
+   > Before building a workflow, you'll want to connect at least one data source — it's very unlikely you'd want to set up a workflow with nothing to pull from. Head to [kenobi.ai/setup](https://kenobi.ai/setup) to connect Notion, HubSpot, or other integrations, then come back and we'll pick up where we left off.
+
+   Do not proceed to the workflows sub-skill until they've confirmed sources are connected (re-run `npx kenobi-pages sources` to verify). If the user explicitly insists on a params-only workflow with no external sources, respect that and continue.
 
 If you are tempted to "just get started" or "explore the project while asking" — don't. That is the single most common failure mode with this skill.
 
@@ -87,13 +96,12 @@ import { createKenobiPagesClient } from "kenobi-pages";
 
 export const kenobi = createKenobiPagesClient({
   apiKey: process.env.KENOBI_PAGES_KEY!,
-  baseUrl: process.env.KENOBI_BASE_URL,
 });
 ```
 
 **Where to put this file:** Check if the project already has a shared utilities directory (`lib/`, `src/lib/`, `utils/`, `src/utils/`, `app/_lib/`, etc.). If one exists, put the client there (e.g. `src/lib/kenobi.ts`). If no shared directory exists, co-locate it inside the route directory you'll create in the pages sub-skill (e.g. `app/for/[slug]/kenobi.ts`). **Never create a new top-level `lib/` or `utils/` directory** just for this file.
 
-If this project uses an env validation library (e.g. `@t3-oss/env-nextjs`), add `KENOBI_PAGES_KEY` and `KENOBI_BASE_URL` to its schema and import from there instead of reading `process.env` directly.
+If this project uses an env validation library (e.g. `@t3-oss/env-nextjs`), add `KENOBI_PAGES_KEY` to its schema and import from there instead of reading `process.env` directly.
 
 If the package is already installed and the client file exists, skip this phase.
 

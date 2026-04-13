@@ -70,7 +70,7 @@ Use the `sourceKey` from the list output (for example `notion:…` or `hubspot-c
 
 If they don't have sources connected, tell them:
 
-> You'll need to connect your data sources in the Kenobi workflow builder UI first. Go to the workflow builder and use the integrations panel to connect Notion, HubSpot, or other services. Then come back and I can set up the workflow.
+> You'll need to connect your data sources first. Head to [kenobi.ai/setup](https://kenobi.ai/setup) to connect Notion, HubSpot, Framer, Webflow, or other integrations. Once connected, come back and I can set up the workflow.
 >
 > Alternatively, you can build a workflow that only uses runtime parameters (values you pass in when triggering a run) — no external data sources needed.
 

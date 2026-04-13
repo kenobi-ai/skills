@@ -151,11 +151,11 @@ If yes, read the **workflows** sub-skill and continue — the schema is already 
 
 If no, explain what they'll need to do in the UI before the agent can resume:
 
-> To finish setup in the Kenobi UI:
+> To finish setup:
 >
-> 1. Go to the workflow builder and select this schema as your output target
-> 2. Connect your data sources and configure AI generation
-> 3. Run the workflow for your leads
+> 1. Connect your data sources at [kenobi.ai/setup](https://kenobi.ai/setup) if you haven't already
+> 2. Go to the workflow builder and select this schema as your output target
+> 3. Configure AI generation and run the workflow for your leads
 >
 > Once a workflow is configured, come back and I can refactor this page to fetch content dynamically.
 
