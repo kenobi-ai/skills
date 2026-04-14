@@ -13,7 +13,7 @@ Then your **first response** to the user must cover exactly two things — and n
 
    > Before we begin — you'll need to connect this project to your Kenobi account.
    >
-   > 1. Grab your API key from [kenobi.ai/setup](https://kenobi.ai/setup) (this is also where you can connect your data sources like Notion, HubSpot, etc.)
+   > 1. Grab your API key from [kenobi.ai/setup](https://kenobi.ai/setup) (this is also where you can connect your data sources like Notion, HubSpot, Google Sheets, etc.)
    > 2. Run this in your terminal:
    >
    > ```
@@ -32,7 +32,7 @@ Send that message. Stop. Wait for the user's reply. Only after they answer (and 
 
 3. **Source check.** Before routing to a sub-skill, run `npx kenobi-pages sources` to check whether the user has any data sources connected. If they answer "starting from scratch" or "I need to create a workflow" and **no sources are returned**, pause and tell them:
 
-   > Before building a workflow, you'll want to connect at least one data source — it's very unlikely you'd want to set up a workflow with nothing to pull from. Head to [kenobi.ai/setup](https://kenobi.ai/setup) to connect Notion, HubSpot, or other integrations, then come back and we'll pick up where we left off.
+   > Before building a workflow, you'll want to connect at least one data source — it's very unlikely you'd want to set up a workflow with nothing to pull from. Head to [kenobi.ai/setup](https://kenobi.ai/setup) to connect Notion, HubSpot, Google Sheets, or other integrations, then come back and we'll pick up where we left off.
 
    Do not proceed to the workflows sub-skill until they've confirmed sources are connected (re-run `npx kenobi-pages sources` to verify). If the user explicitly insists on a params-only workflow with no external sources, respect that and continue.
 

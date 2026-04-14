@@ -42,6 +42,7 @@ Then ask about their data:
 > Where does the lead data come from? For example:
 > - A Notion database (CRM contacts, company info)
 > - HubSpot (contacts, deals)
+> - Google Sheets (spreadsheet data)
 > - Or will you pass everything as parameters when triggering a run?
 
 ### 2. Discover connected sources
@@ -60,7 +61,7 @@ After you pick a source you plan to use in the workflow, preview real rows so lo
 npx kenobi-pages sources sample <sourceKey>
 ```
 
-Use the `sourceKey` from the list output (for example `notion:…` or `hubspot-crm:…`). Check values in columns you will match on — for example if the workflow uses lookup resolution on a domain field, confirm whether stored values look like `acme.com` or `https://acme.com`, and align the runtime param you pass accordingly.
+Use the `sourceKey` from the list output (for example `notion:…`, `hubspot-crm:…`, or `google-sheets:…`). Check values in columns you will match on — for example if the workflow uses lookup resolution on a domain field, confirm whether stored values look like `acme.com` or `https://acme.com`, and align the runtime param you pass accordingly.
 
 > I can see these data sources connected to your Kenobi account:
 > - "CRM Contacts" (Notion) — has fields: Name, Email, Domain, Company Size
@@ -70,7 +71,7 @@ Use the `sourceKey` from the list output (for example `notion:…` or `hubspot-c
 
 If they don't have sources connected, tell them:
 
-> You'll need to connect your data sources first. Head to [kenobi.ai/setup](https://kenobi.ai/setup) to connect Notion, HubSpot, Framer, Webflow, or other integrations. Once connected, come back and I can set up the workflow.
+> You'll need to connect your data sources first. Head to [kenobi.ai/setup](https://kenobi.ai/setup) to connect Notion, HubSpot, Google Sheets, Framer, Webflow, or other integrations. Once connected, come back and I can set up the workflow.
 >
 > Alternatively, you can build a workflow that only uses runtime parameters (values you pass in when triggering a run) — no external data sources needed.
 
