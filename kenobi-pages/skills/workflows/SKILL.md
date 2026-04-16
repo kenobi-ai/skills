@@ -100,7 +100,6 @@ A workflow config is a JSON object. Here's the structure — fill in the values 
   ],
   "sources": [],
   "output": {
-    "provider": "kenobi-pages",
     "dataSourceKey": "kenobi-pages:<schema-slug>",
     "title": "<human-readable name>",
     "schema": { "<field definitions>" }
@@ -117,6 +116,7 @@ A workflow config is a JSON object. Here's the structure — fill in the values 
 
 Key rules:
 - `id` must match the workflow slug
+- `output.dataSourceKey` is the canonical output target reference; do not add `output.provider`
 - **The `slug` field must appear in three places:** `output.schema` (so its value is included in the output), `fields` (bound to `{ "strategy": "param", "paramName": "slug" }`), and `destinations[].adapterConfig.slugField`. If it's missing from `output.schema`, runs will succeed but content will be stored under an auto-generated slug instead of the one you passed — and pages will 404
 - Each output field needs a binding: `param` (copy from runtime parameter), `passthrough` (copy from source field), `generate` (AI text), or `generate-image` (AI image)
 - Fields bound to `generate` or `generate-image` reference a `generationGroups` entry by `groupId`
@@ -186,7 +186,6 @@ A workflow that reads HubSpot contacts and generates landing page content:
     }
   ],
   "output": {
-    "provider": "kenobi-pages",
     "dataSourceKey": "kenobi-pages:post-call-page",
     "title": "Post-Call Page",
     "schema": {
@@ -378,7 +377,6 @@ A workflow that takes a template hero image and reskins it with lead-specific br
     }
   ],
   "output": {
-    "provider": "kenobi-pages",
     "dataSourceKey": "kenobi-pages:branded-hero",
     "title": "Branded Hero Page",
     "schema": {
