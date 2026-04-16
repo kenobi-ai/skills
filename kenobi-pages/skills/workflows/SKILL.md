@@ -434,3 +434,35 @@ Key differences from text workflows:
 - Field `description` values matter — they're included in AI generation prompts, so be specific about what you want
 - Test incrementally: create with a few fields first, trigger a test run, verify output, then add complexity
 - The `description` on the workflow itself is prepended to every generation group's system prompt — use it for global instructions like tone, audience, or constraints
+
+## Guardrails & Known Pitfalls
+
+### Do not include `id` in output schema for create destinations
+
+Destination adapters like Webflow and Framer auto-generate item IDs on create. Including `id` in the workflow output schema will cause validation failures (`id: Invalid input: expected string, received undefined`). Remove it from both `output.schema` and `fields`.
+
+### Verify source data formats match output field types
+
+If your output schema declares a field as `"type": "url"`, the source data must be a full URL (e.g. `https://acme.com`), not a bare domain (`acme.com`). Sample source data before designing the output schema:
+
+```bash
+npx kenobi-pages sources sample <sourceKey>
+```
+
+Check that values in lookup/passthrough fields match the expected format. If they don't, use a `param` to pass the corrected value at runtime instead of passthrough.
+
+### Webflow: staged/draft items are not visible in source samples
+
+When sampling a Webflow CMS collection, only **published** items are returned. If all items are in draft/staged mode, the sample will appear empty. This does not mean the collection is unused — check the Webflow dashboard for draft content.
+
+### Webflow: image/file URLs must be fetchable
+
+Webflow validates image field URLs server-side. URLs that return errors or redirects (like `placehold.co` placeholder URLs) may be silently rejected, causing "Field is required" errors. Use real, publicly-accessible image URLs (Webflow CDN, Vercel Blob, S3, etc.).
+
+### Post-run verification
+
+A successful workflow run does **not** guarantee correct destination behavior. After a run completes, check the `deliveries` array in the run result — confirm all expected destinations are present and inspect `deliveries[].metadata` for adapter-specific details (e.g. slug, collection ID, updated range).
+
+### Slug handling in Webflow/Framer destinations
+
+If your workflow includes a `slug` field mapping, the destination adapter will use its value as the item slug. If no explicit `slug` mapping exists, the adapter falls back to slugifying the first PlainText field — which may produce unexpected slugs. Always include an explicit `slug` mapping when slug correctness matters.
