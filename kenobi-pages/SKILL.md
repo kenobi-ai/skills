@@ -111,7 +111,7 @@ These apply to all sub-skills:
 
 - **Co-locate page code with the route.** Types, content parsing, placeholder data, and view components all belong inside the route directory (e.g. `app/for/[slug]/types.ts`, `app/for/[slug]/content.ts`, `app/for/[slug]/view.tsx`). Deleting the route should clean up everything page-related.
 - **Workflow configs go in `.kenobi/workflows/`.** Like `.github/workflows/` — hidden, clearly infrastructure, not app code. Create this directory if it doesn't exist.
-- **Never persist intermediate artifacts.** Schema JSON is a one-shot push — use inline JSON, don't save a file. The schema is already embedded in the workflow config's `output.schema`.
+- **Never persist intermediate artifacts.** Schema JSON is a one-shot push — use inline JSON, don't save a file. In workflow configs, the schema metadata is embedded in `output.fields`.
 - **Never create a top-level directory without checking what exists.** Before creating any directory, read the project's existing structure and adapt to it.
 
 ## Phase 4 — Implementation

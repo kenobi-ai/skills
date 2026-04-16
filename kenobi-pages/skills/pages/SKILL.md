@@ -167,7 +167,7 @@ Replace hardcoded content with the same pattern as forward mode — `kenobi.getP
 
 ## Schema Field Types Reference
 
-When constructing a schema (for `schema push` or inside a workflow config's `output.schema`), use these field type definitions:
+When constructing a schema (for `schema push` or for the schema portion of a workflow config's `output.fields` entries), use these field type definitions:
 
 | Type                | Syntax                                                                                      | Notes                                     |
 | ------------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------- |

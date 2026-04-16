@@ -102,10 +102,13 @@ A workflow config is a JSON object. Here's the structure — fill in the values 
   "output": {
     "dataSourceKey": "kenobi-pages:<schema-slug>",
     "title": "<human-readable name>",
-    "schema": { "<field definitions>" }
-  },
-  "fields": {
-    "slug": { "strategy": "param", "paramName": "slug" }
+    "fields": {
+      "slug": {
+        "type": "string",
+        "description": "URL slug for the generated page",
+        "binding": { "strategy": "param", "paramName": "slug" }
+      }
+    }
   },
   "generationGroups": [],
   "destinations": [
@@ -117,8 +120,8 @@ A workflow config is a JSON object. Here's the structure — fill in the values 
 Key rules:
 - `id` must match the workflow slug
 - `output.dataSourceKey` is the canonical output target reference; do not add `output.provider`
-- **The `slug` field must appear in three places:** `output.schema` (so its value is included in the output), `fields` (bound to `{ "strategy": "param", "paramName": "slug" }`), and `destinations[].adapterConfig.slugField`. If it's missing from `output.schema`, runs will succeed but content will be stored under an auto-generated slug instead of the one you passed — and pages will 404
-- Each output field needs a binding: `param` (copy from runtime parameter), `passthrough` (copy from source field), `generate` (AI text), or `generate-image` (AI image)
+- **The `slug` field must appear in two places:** `output.fields.slug` (with `binding: { "strategy": "param", "paramName": "slug" }`) and `destinations[].adapterConfig.slugField`. If it's missing from `output.fields`, runs will succeed but content will be stored under an auto-generated slug instead of the one you passed — and pages will 404
+- Each `output.fields.<name>` entry needs a binding: `param` (copy from runtime parameter), `passthrough` (copy from source field), `generate` (AI text), or `generate-image` (AI image)
 - Fields bound to `generate` or `generate-image` reference a `generationGroups` entry by `groupId`
 - A generation group has a `system` prompt, a `strategy` ("generate" or "generate-image"), and `contextSources` listing which source data the AI sees. Image groups also have `prompt` (task-specific directive), `images` (input images), and `imageConfig` — see the reference section below
 - Source `resolution` determines how data is fetched: `single` (take first record), `lookup` (filter by a param value), or `collection` (fetch all, optionally with AI selection)
@@ -188,27 +191,20 @@ A workflow that reads HubSpot contacts and generates landing page content:
   "output": {
     "dataSourceKey": "kenobi-pages:post-call-page",
     "title": "Post-Call Page",
-    "schema": {
-      "slug": { "type": "string", "description": "URL slug" },
-      "company_name": { "type": "string", "description": "Lead company name (passed through from source)" },
-      "headline": { "type": "string", "description": "Attention-grabbing personalized headline" },
-      "value_proposition": { "type": "string", "description": "Why our product matters to this lead" },
+    "fields": {
+      "slug": { "type": "string", "description": "URL slug", "binding": { "strategy": "param", "paramName": "slug" } },
+      "company_name": { "type": "string", "description": "Lead company name (passed through from source)", "binding": { "strategy": "passthrough", "sourceId": "hubspot-contacts", "sourceField": "company" } },
+      "headline": { "type": "string", "description": "Attention-grabbing personalized headline", "binding": { "strategy": "generate", "groupId": "text-gen" } },
+      "value_proposition": { "type": "string", "description": "Why our product matters to this lead", "binding": { "strategy": "generate", "groupId": "text-gen" } },
       "use_cases": {
         "type": "array",
         "items": { "type": "object", "fields": { "title": { "type": "string" }, "description": { "type": "string" } } },
         "min": 3, "max": 5,
-        "description": "Relevant use cases for the lead"
+        "description": "Relevant use cases for the lead",
+        "binding": { "strategy": "generate", "groupId": "text-gen" }
       },
-      "cta_text": { "type": "string", "description": "Call-to-action button text" }
+      "cta_text": { "type": "string", "description": "Call-to-action button text", "binding": { "strategy": "generate", "groupId": "text-gen" } }
     }
-  },
-  "fields": {
-    "slug": { "strategy": "param", "paramName": "slug" },
-    "company_name": { "strategy": "passthrough", "sourceId": "hubspot-contacts", "sourceField": "company" },
-    "headline": { "strategy": "generate", "groupId": "text-gen" },
-    "value_proposition": { "strategy": "generate", "groupId": "text-gen" },
-    "use_cases": { "strategy": "generate", "groupId": "text-gen" },
-    "cta_text": { "strategy": "generate", "groupId": "text-gen" }
   },
   "generationGroups": [
     {
@@ -249,7 +245,7 @@ Always use `workflow get` before updating to avoid overwriting changes made in t
 
 ### Field Binding Strategies
 
-Every output field needs a binding in the `fields` object. Each strategy has its own required properties:
+Every output field needs a binding in `output.fields.<name>.binding`. Each strategy has its own required properties:
 
 | Strategy | Required properties | Description |
 |---|---|---|
@@ -267,7 +263,7 @@ Every output field needs a binding in the `fields` object. Each strategy has its
 | `system` | yes | System prompt — global context and instructions for the AI |
 | `contextSources` | yes | Array of source refs — which source data the AI sees (see below) |
 
-A text generation group can target multiple output fields — list them all with `{ "strategy": "generate", "groupId": "<id>" }` in `fields`. The AI produces all of them in a single call.
+A text generation group can target multiple output fields — set each field's `binding` to `{ "strategy": "generate", "groupId": "<id>" }`. The AI produces all of them in a single call.
 
 ### Generation Group Keys — Image (`"generate-image"`)
 
@@ -379,16 +375,11 @@ A workflow that takes a template hero image and reskins it with lead-specific br
   "output": {
     "dataSourceKey": "kenobi-pages:branded-hero",
     "title": "Branded Hero Page",
-    "schema": {
-      "slug": { "type": "string", "description": "URL slug" },
-      "company_name": { "type": "string", "description": "Lead company name" },
-      "hero_image_url": { "type": "url", "description": "Personalized hero image" }
+    "fields": {
+      "slug": { "type": "string", "description": "URL slug", "binding": { "strategy": "param", "paramName": "slug" } },
+      "company_name": { "type": "string", "description": "Lead company name", "binding": { "strategy": "passthrough", "sourceId": "lead-data", "sourceField": "Name" } },
+      "hero_image_url": { "type": "url", "description": "Personalized hero image", "binding": { "strategy": "generate-image", "groupId": "hero-gen" } }
     }
-  },
-  "fields": {
-    "slug": { "strategy": "param", "paramName": "slug" },
-    "company_name": { "strategy": "passthrough", "sourceId": "lead-data", "sourceField": "Name" },
-    "hero_image_url": { "strategy": "generate-image", "groupId": "hero-gen" }
   },
   "generationGroups": [
     {
@@ -437,7 +428,7 @@ Key differences from text workflows:
 
 ### Do not include `id` in output schema for create destinations
 
-Destination adapters like Webflow and Framer auto-generate item IDs on create. Including `id` in the workflow output schema will cause validation failures (`id: Invalid input: expected string, received undefined`). Remove it from both `output.schema` and `fields`.
+Destination adapters like Webflow and Framer auto-generate item IDs on create. Including `id` in `output.fields` will cause validation failures (`id: Invalid input: expected string, received undefined`). Remove it from `output.fields`.
 
 ### Verify source data formats match output field types
 
